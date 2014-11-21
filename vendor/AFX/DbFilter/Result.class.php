@@ -6,7 +6,7 @@
  * Contains results for a row inside of an object.
  */
 
-namespace Base\Db;
+namespace AFX\DbFilter;
 
 class Result
 {

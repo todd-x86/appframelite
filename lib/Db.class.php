@@ -14,6 +14,7 @@ class Db
 	// Access modes
 	const NORMAL = 0;
 	const LAZY = 1;
+	const NONE = 2;
 	
 	// PDO reference
 	protected $pdo;
@@ -93,7 +94,6 @@ class Db
 				$stmt->setFetchMode(PDO::FETCH_LAZY);
 				break;
 			case self::NORMAL:
-			default:
 				$stmt->setFetchMode(PDO::FETCH_ASSOC);
 		}
 		
@@ -133,5 +133,43 @@ class Db
 		}
 		$this->rows = $s->rowCount();
 		return $result;
+	}
+	
+	// Returns an array of schema fields for a table
+	function schema ($table)
+	{
+		$fields = array();
+		$stmt = $this->sql(sprintf('DESCRIBE %s', $table));
+		$stmt->execute();
+		$r = $stmt->fetchAll(\PDO::FETCH_CLASS);
+		$s = new Schema();
+		if (count($r) > 0)
+		{
+			foreach ($r as $rf)
+			{
+				$meta = Schema::fromSqlType($rf->Type);
+				
+				// Create new field
+				$s->add($rf->Field, $meta['type']);
+				if ($meta['length'] !== null)
+				{
+					// NOTE: If it's null, schema should set 'maxlength' to false
+					$s->set($rf->Field, 'maxlength', $meta['length']);
+				}
+				$s->setNull($rf->Field, strtolower($rf->Null) === 'yes');
+				$s->key($rf->Field, $rf->Key !== null);
+				if (strtolower($rf->Key) == 'pri')
+				{
+					// NOTE: This shouldn't be refactored ("key" will always be set to true if you call "primary")
+					$s->primary($rf->Field, true);
+				}
+				$s->setDefault($rf->Field, $rf->Default);
+				if (strtolower($rf->Extra) == 'auto_increment')
+				{
+					$s->set($rf->Field, 'auto_increment', true);
+				}
+			}
+		}
+		return $s;
 	}
 }

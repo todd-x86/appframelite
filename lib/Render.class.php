@@ -24,7 +24,7 @@ abstract class Render
 	// Render function for generating output in the View
 	abstract function render ();
 	
-	// Returns the file to render
+	// Returns the primary file to render
 	protected function getRenderFile ()
 	{
 		// Use layout file or template depending on content
@@ -43,6 +43,12 @@ abstract class Render
 			$file = $this->path.'/'.$file;
 		}
 		return $file;
+	}
+	
+	// Returns the absolute path to the content file to render
+	protected function getContentFile ()
+	{
+		return $this->path.'/'.$this->file;
 	}
 	
 	// Sets view-specific data

@@ -6,7 +6,7 @@
  * Provides an abstracted class for querying a database.
  */
  
-namespace Base\Db;
+namespace AFX\DbFilter;
 use Base\Db;
 
 class Filter
